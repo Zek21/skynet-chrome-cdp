@@ -396,4 +396,7 @@ machines, not conformance targets.
 | Windows 11, 6 cores | Chrome 151.0.7922.140 | 0.33 ms | 2.10 ms | 3,048 calls/s | 7.2 ms | 5.76× |
 
 The reduction figure is for the synthetic fixture, which is deliberately
-form-dense and therefore close to the worst case for reduction (7.6).
+form-dense: scene length scales with the number of controls while the document
+length does not, so a control-dense page is the condition under which this
+technique reduces least (7.6). No claim is made about where this fixture sits
+relative to a true worst case; only one fixture was measured.

@@ -2,7 +2,10 @@
 
 Two different physical machines, the same synthetic fixture, 200 samples each,
 20 warm-up samples discarded. The fixture is built by the benchmark inside a tab
-it opens, so no network is involved and both machines measured identical work.
+it opens, so no network is involved and both machines were given an identical
+fixture. That is not the same as identical browser-internal work — see the
+accessibility-tree note below, where the two hosts built trees of 1,684 and 1,244
+nodes from that same page.
 
 The remote runs were executed by an operator on the second machine, who fetched
 `standalone_benchmark.py` over HTTPS and ran it with no install step — the
