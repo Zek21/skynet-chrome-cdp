@@ -2,10 +2,17 @@
 
 **Drive the Chrome you are already signed into. No dependencies.**
 
-Playwright and Puppeteer launch a browser. This one attaches to the browser
-already open on the machine — with its cookies, its logged-in sessions, its
-extensions, its profile. That is the entire difference, and it is the difference
-that matters when the thing you need to automate sits behind a login.
+This connector attaches to a browser that is already running and already signed
+in — its cookies, its sessions, its extensions, its profile — and treats that as
+the only mode of operation.
+
+To be precise, because the easy version of this claim is false: Playwright and
+Puppeteer **can** also attach to a running browser, via
+`chromium.connectOverCDP()` and `puppeteer.connect({browserURL})`. The difference
+is not capability, it is what each design treats as the normal case. There,
+attaching is an escape hatch on a launch-first tool. Here it is the premise, which
+changes the defaults that actually matter — see [tab ownership](#why-this-exists)
+below.
 
 ```python
 from skynet_chrome_cdp import Chrome, scene
@@ -66,12 +73,28 @@ curl -O https://raw.githubusercontent.com/Zek21/skynet-chrome-cdp/master/benchma
 python standalone_benchmark.py --port 9222
 ```
 
-Start Chrome with a debugging port. Use a **separate profile** unless you
-understand the consequences in [SECURITY.md](SECURITY.md):
+Start Chrome with a debugging port. **`--user-data-dir` is not optional:**
 
 ```bash
 chrome --remote-debugging-port=9222 --user-data-dir="%TEMP%\chrome-automation"
 ```
+
+Since **Chrome 136**, `--remote-debugging-port` is ignored when it would open the
+*default* user data directory. The flag only takes effect alongside a
+`--user-data-dir` pointing somewhere non-standard, because a non-default
+directory uses a different encryption key and so keeps the real profile's saved
+passwords and cookies out of reach of the protocol.
+
+Omit it and Chrome logs *"DevTools remote debugging requires a non-default data
+directory"*, creates no listening socket and no `DevToolsActivePort` file, and
+your script hangs on a blank page. If nothing is connecting, this is almost
+always why.
+
+That directory may hold a fully signed-in profile — it just cannot be the default
+one. What Chrome closed is the command-line route into somebody's daily browser.
+
+Kill any running Chrome first; a surviving instance means your relaunch quietly
+reuses the default directory.
 
 ---
 

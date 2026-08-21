@@ -20,6 +20,19 @@ This is not a defect in this library or in Chrome — it is what the DevTools
 Protocol is for. It matters here because a session-attached connector is, by
 definition, pointed at a browser that has something worth protecting in it.
 
+**Chrome enforces part of this for you now.** Since version 136,
+`--remote-debugging-port` is ignored when it would open the default user data
+directory; it takes effect only with a `--user-data-dir` pointing at a
+non-standard location. A non-default directory is encrypted with a different key,
+so the passwords and cookies in the user's real profile stay out of the
+protocol's reach. Launched without it, Chrome creates no listening socket and no
+`DevToolsActivePort` file.
+
+Read that restriction accurately: it limits *what an attacker finds*, not *who
+can connect*. The port itself still has no authentication. Anything that can
+reach it retains full control of whatever profile is behind it — and a
+non-default directory can hold a fully signed-in profile.
+
 ## Rules this library enforces
 
 **Loopback only.** `assert_loopback()` raises on any bind address that is not
