@@ -114,9 +114,14 @@ within the viewport and returns itself (or a descendant) from a hit test.
 **3.7 degenerate scene** — a scene containing no reachable elements extracted
 from a document whose serialised length is greater than zero.
 
-**3.8 protocol floor** — the round-trip latency of a single CDP request that
-performs no page work, representing the minimum achievable command latency on a
-given host.
+**3.8 sequential baseline** (informally, the *protocol floor*) — the measured
+round-trip latency of a single CDP request that performs no page work, issued
+with no other request in flight.
+
+*It is a measured baseline for reading other operations against, NOT a
+theoretical minimum: batching, pipelining and concurrent sessions are outside
+what it measures, and nothing in this specification establishes that the figure
+cannot be beaten.*
 
 ---
 
@@ -263,7 +268,7 @@ page that happened to be open" is not comparable between two hosts.*
 report as not comparable across hosts, in a machine-readable field. *Rationale: a
 JSON report outlives the caveat in the prose that accompanied it.*
 
-**8.4** The benchmark **shall** report the protocol floor (3.8) separately from
+**8.4** The benchmark **shall** report the sequential baseline (3.8) separately from
 any higher-level operation, so that library overhead can be distinguished from
 protocol and browser cost.
 
@@ -367,7 +372,7 @@ instead of pretending a unit test covers it.
 | 7.6 | ratio names the document measured | `benchmark.py` emits `fixture`, `fixture_detail` beside `reduction_ratio` |
 | 8.1 | fixture, samples, percentile, host published | `benchmark.py` report fields `fixture`, `evaluate_rtt.n`, `host` |
 | 8.2 | self-built synthetic fixture, no network | `test_cdp.py::test_fixture_declares_its_own_dimensions`, `test_fixture_interleaves_controls_with_text` |
-| 8.4 | protocol floor reported separately | `benchmark.py` `measurements.evaluate_rtt` |
+| 8.4 | sequential baseline reported separately | `benchmark.py` `measurements.evaluate_rtt` |
 | 8.5 | distribution, not a mean alone | `test_cdp.py::test_summary_matches_hand_computed_values` |
 | 8.6 | warm-up discarded and stated | `benchmark.py` `WARMUP_SAMPLES` |
 | 8.7 | reports whether a tab was left open | `test_cdp.py::test_a_tab_still_listed_reports_failure` |
@@ -383,7 +388,7 @@ instead of pretending a unit test covers it.
 3. Construct the synthetic fixture in that tab: 120 interactive controls and 200
    text blocks, interleaved so that controls occur both above and below the fold.
 4. Discard 20 warm-up samples.
-5. Record 200 samples of `Runtime.evaluate("1+1")` — the protocol floor.
+5. Record 200 samples of `Runtime.evaluate("1+1")` — the sequential baseline.
 6. Record 20 samples each of document serialisation, scene extraction, and
    accessibility tree retrieval; 10 of screenshot capture.
 7. Close the owned tab and confirm its absence.

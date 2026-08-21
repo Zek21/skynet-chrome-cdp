@@ -19,7 +19,9 @@ Three rules it follows:
      Percentiles are nearest-rank, stated here so the arithmetic is auditable.
 
   3. SEPARATE THE FLOOR FROM THE LIBRARY. `Runtime.evaluate` on a trivial
-     expression is the protocol floor: one request, one response, no page work.
+     expression is the SEQUENTIAL BASELINE: one request, one response, no page
+     work, nothing else in flight. It is a measured reference point, not a
+     theoretical minimum -- batching and concurrency are not measured here.
      Everything else in this report should be read as work done above that floor.
 """
 from __future__ import annotations

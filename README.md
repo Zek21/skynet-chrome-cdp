@@ -139,7 +139,7 @@ Chrome 151, Windows 11, 6 cores, synthetic fixture (685 elements), n=200,
 
 | Operation | p50 | p90 | p99 |
 |-----------|-----|-----|-----|
-| `evaluate` round trip (protocol floor) | **0.33 ms** | 0.46 ms | 2.10 ms |
+| `evaluate` round trip (sequential baseline) | **0.33 ms** | 0.46 ms | 2.10 ms |
 | Scene extraction | 7.17 ms | — | — |
 | Full DOM serialisation | 12.10 ms | — | — |
 | Accessibility tree | 48.53 ms | — | — |
