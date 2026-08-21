@@ -72,8 +72,7 @@ directory**. A token written "0600" into a shared, roamed, or synced folder is
 readable by everyone that folder grants.
 
 So on Windows the inherited ACL is stripped (`icacls /inheritance:r`) and a single
-explicit grant is applied to the current user — the same treatment OpenSSH
-requires of a private key before it will use it. `SYSTEM`, `Administrators` and
+explicit grant is applied to the current user. `SYSTEM`, `Administrators` and
 `OWNER RIGHTS` remain, because they can take ownership of any file regardless of
 its DACL; excluding them is not achievable and a check that demanded it would be
 unsatisfiable.

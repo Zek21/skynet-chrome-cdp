@@ -217,8 +217,7 @@ def write_token_file(path: str, token: str) -> str:
     were not, and the mode bits were decorative either way.
 
     So on Windows the inherited ACL is stripped and a single explicit grant to
-    the current user is applied, which is the same treatment OpenSSH demands of
-    a private key before it will use it.
+    the current user is applied.
     """
     directory = os.path.dirname(os.path.abspath(path))
     if directory:
