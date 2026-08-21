@@ -72,10 +72,12 @@ directory**. A token written "0600" into a shared, roamed, or synced folder is
 readable by everyone that folder grants.
 
 So on Windows the inherited ACL is stripped (`icacls /inheritance:r`) and a single
-explicit grant is applied to the current user. `SYSTEM`, `Administrators` and
-`OWNER RIGHTS` remain, because they can take ownership of any file regardless of
-its DACL; excluding them is not achievable and a check that demanded it would be
-unsatisfiable.
+explicit grant is applied to the current user. `SYSTEM`, `Administrators` and `OWNER RIGHTS` are tolerated on the resulting
+ACL. Not because they cannot be removed — they can — but because a local
+administrator can take ownership of any file and rewrite its DACL anyway.
+Stripping their ACE would change what the audit trail looks like, not who is able
+to read the secret, while causing the check to fail on files that are in fact
+correctly protected.
 
 This was found by a test, not by review. The test asserted the POSIX group/other
 bits were clear; it passed on Linux and failed on Windows, where the mode bits

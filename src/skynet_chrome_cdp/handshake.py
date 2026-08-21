@@ -62,13 +62,20 @@ MIN_PEER_VERSION = "1.3.0"
 
 _SEMVER = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$")
 
-# Windows principals that remain on the ACL after `icacls /inheritance:r` and
-# cannot meaningfully be excluded: SYSTEM and Administrators can take ownership
-# of any file regardless of its DACL, and OWNER RIGHTS describes the owner. A
-# check that failed on these would be unsatisfiable, and an unsatisfiable check
-# gets disabled rather than fixed. What it MUST still catch is a grant to an
-# ordinary principal -- Users, Everyone, Authenticated Users, another account.
-_WINDOWS_UNAVOIDABLE_PRINCIPALS = frozenset({
+# Windows principals this check deliberately TOLERATES on the ACL.
+#
+# Not "unavoidable" -- an earlier version of this comment said so and was wrong.
+# A DACL can be written without an Administrators ACE, and `icacls /inheritance:r`
+# plus a single grant will produce one. The reason to tolerate them is different
+# and narrower: a local administrator can take ownership of any file and rewrite
+# its DACL, so removing their ACE does not deny them the token. It changes what
+# the audit log looks like, not who can read the secret.
+#
+# Refusing to tolerate them would therefore fail the check on a correctly
+# protected file while buying no protection. What the check MUST still catch is a
+# grant to an ordinary principal -- Users, Everyone, Authenticated Users, or
+# another user account -- which is exactly what the Everyone:R test asserts.
+_WINDOWS_TOLERATED_PRINCIPALS = frozenset({
     "nt authority\\system",
     "builtin\\administrators",
     "owner rights",
@@ -291,7 +298,7 @@ def token_file_is_private(path: str) -> bool:
             continue
         if grantee == principal or grantee.split("\\")[-1] == user_only:
             continue
-        if grantee in _WINDOWS_UNAVOIDABLE_PRINCIPALS:
+        if grantee in _WINDOWS_TOLERATED_PRINCIPALS:
             continue
         return False
     return True
