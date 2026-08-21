@@ -217,7 +217,7 @@ requirement reduces to one, a named artifact such as a manifest field where it
 does not.
 
 ```bash
-pytest tests/          # 81 tests
+pytest tests/          # 85 tests
 ```
 
 ---
