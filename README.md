@@ -152,7 +152,11 @@ python -m skynet_chrome_cdp.benchmark --port 9222 --samples 200
 ```
 
 The fixture is built by the benchmark inside a tab it opens, so no network is
-involved and two machines measure identical work. A run against an arbitrary
+involved and two machines are given an identical **fixture** — which is not the
+same as identical browser-internal work; see
+[CROSS_MACHINE.md](benchmarks/results/CROSS_MACHINE.md), where two hosts built
+accessibility trees of 1,684 and 1,244 nodes from that same page. A run against
+an arbitrary
 open page sets `comparable_across_machines: false` in the report — a
 machine-readable field, because a JSON file outlives the caveat that came with
 it. Full procedure: [SPEC.md Annex B](SPEC.md#annex-b-informative--benchmark-procedure).
