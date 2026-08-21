@@ -145,7 +145,7 @@ Chrome 151, Windows 11, 6 cores, synthetic fixture (685 elements), n=200,
 | Accessibility tree | 48.53 ms | — | — |
 | Screenshot (PNG) | 78.27 ms | — | — |
 
-**3,048 calls/second** at p50. Reproduce it yourself:
+**3,048 calls/second implied** by that median (1000/p50 — a derived rate, not measured throughput). Reproduce it yourself:
 
 ```bash
 python -m skynet_chrome_cdp.benchmark --port 9222 --samples 200

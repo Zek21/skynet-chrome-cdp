@@ -114,7 +114,7 @@ within the viewport and returns itself (or a descendant) from a hit test.
 **3.7 degenerate scene** — a scene containing no reachable elements extracted
 from a document whose serialised length is greater than zero.
 
-**3.8 sequential baseline** (informally, the *protocol floor*) — the measured
+**3.8 sequential baseline** — the measured
 round-trip latency of a single CDP request that performs no page work, issued
 with no other request in flight.
 
@@ -400,7 +400,7 @@ instead of pretending a unit test covers it.
 Recorded on the reference implementation. These are observations from specific
 machines, not conformance targets.
 
-| Host | Browser | Floor p50 | p99 | Throughput | Scene | Reduction |
+| Host | Browser | Baseline p50 | p99 | Implied rate (1000/p50) | Scene | Reduction |
 |------|---------|-----------|-----|-----------|-------|-----------|
 | Windows 11, 6 cores | Chrome 151.0.7922.140 | 0.33 ms | 2.10 ms | 3,048 calls/s | 7.2 ms | 5.76× |
 

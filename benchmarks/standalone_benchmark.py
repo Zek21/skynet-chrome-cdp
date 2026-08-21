@@ -11,18 +11,19 @@ Two reasons, both load-bearing:
 
   2. MEASUREMENT INDEPENDENCE. An instrument that imports the system under test
      measures the system *plus itself*. This file speaks raw RFC 6455 and raw CDP,
-     so `--mode raw` establishes the PROTOCOL FLOOR: the fastest a Python process
-     on this machine can possibly drive this Chrome. Any connector library is then
-     measured as overhead ABOVE that floor, which is the only honest way to say a
-     connector is "fast".
+     so `--mode raw` establishes the SEQUENTIAL BASELINE: one request at a time,
+     nothing else in flight. It is a measured reference point, NOT a theoretical
+     minimum -- batching, pipelining and concurrent sessions are outside what it
+     measures. Any connector library is then measured as overhead above that
+     baseline, which is the only honest way to say a connector is "fast".
 
-The floor is the point. "0.5ms latency" is a claim; a p50 with a stated sample
-count, a stated fixture, and a reproducible procedure is a measurement.
+The baseline is the point. "0.5ms latency" is a claim; a p50 with a stated
+sample count, a stated fixture, and a reproducible procedure is a measurement.
 
 WHAT IT MEASURES
 ----------------
   rtt          Runtime.evaluate round-trip on a trivial expression. This is the
-               protocol floor -- one request, one response, no page work.
+               sequential baseline -- one request, one response, no page work.
   dom          DOM.getDocument + DOM.getOuterHTML: bytes of raw HTML.
   ax           Accessibility.getFullAXTree: the structural perception input.
   actionable   AX nodes filtered to elements an agent can actually act on.
@@ -440,7 +441,7 @@ def run_benchmark(port, samples, fixture_mode, timeout):
                 return None, "fixture did not build"
             report["fixture_detail"] = built
 
-        # --- 1. Protocol floor: Runtime.evaluate round-trip -------------
+        # --- 1. Sequential baseline: Runtime.evaluate round-trip --------
         for _ in range(WARMUP_SAMPLES):
             eval_value(cdp, "1+1")
         rtt = []
@@ -517,7 +518,9 @@ def run_benchmark(port, samples, fixture_mode, timeout):
         # --- 6. Derived throughput --------------------------------------
         p50 = report["measurements"]["evaluate_rtt"].get("p50_ms")
         if p50:
-            report["measurements"]["ops_per_second_p50"] = round(1000.0 / p50, 1)
+            # DERIVED from p50, not a measured throughput: it is the rate implied
+            # by the median sequential round trip, with no concurrency involved.
+            report["measurements"]["implied_calls_per_second_at_p50"] = round(1000.0 / p50, 1)
 
         report["duration_s"] = round(time.time() - started, 2)
         report["ok"] = True
@@ -566,7 +569,8 @@ def render_human(report):
                f"| p99 {rtt.get('p99_ms')} ms  (n={rtt.get('n')})")
     out.append(f"                    min {rtt.get('min_ms')} | max {rtt.get('max_ms')} "
                f"| stdev {rtt.get('stdev_ms')}")
-    out.append(f"throughput        : {m.get('ops_per_second_p50')} ops/s at p50")
+    out.append(f"implied rate      : {m.get('implied_calls_per_second_at_p50')} calls/s "
+               f"(derived 1000/p50, not measured throughput)")
     ds = m.get("dom_serialize", {})
     out.append(f"DOM serialize     : p50 {ds.get('p50_ms')} ms -> {m.get('dom_chars')} chars")
     ax = m.get("ax_tree", {})

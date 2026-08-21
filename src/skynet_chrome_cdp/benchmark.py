@@ -182,7 +182,9 @@ def run(port: int = 9222, samples: int = 200, fixture: str = "synthetic",
         report["measurements"]["evaluate_rtt"] = summarize(rtt)
         p50 = report["measurements"]["evaluate_rtt"]["p50_ms"]
         if p50:
-            report["measurements"]["ops_per_second_p50"] = round(1000.0 / p50, 1)
+            # DERIVED from p50, not measured throughput: the rate implied by the
+            # median sequential round trip, with no concurrency involved.
+            report["measurements"]["implied_calls_per_second_at_p50"] = round(1000.0 / p50, 1)
 
         # 2. Raw DOM serialisation
         dom_ms: list[float] = []
@@ -279,7 +281,8 @@ def render(report: dict) -> str:
         f"attach            : {m.get('attach_ms')} ms (one-time)",
         f"evaluate RTT      : p50 {rtt.get('p50_ms')} | p90 {rtt.get('p90_ms')} | "
         f"p99 {rtt.get('p99_ms')} ms   (n={rtt.get('n')})",
-        f"throughput        : {m.get('ops_per_second_p50')} calls/s at p50",
+        f"implied rate      : {m.get('implied_calls_per_second_at_p50')} calls/s "
+        f"(derived 1000/p50, not measured throughput)",
         f"DOM serialize     : p50 {m.get('dom_serialize', {}).get('p50_ms')} ms "
         f"-> {m.get('dom_chars')} chars",
         f"perception scene  : p50 {m.get('perception', {}).get('p50_ms')} ms "
