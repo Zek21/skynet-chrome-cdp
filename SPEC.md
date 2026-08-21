@@ -8,10 +8,11 @@
 This document is written in the structure and language conventions used by IEEE
 standards (IEEE Std 830 / 1016 / 29148 lineage). It is **not** an IEEE-published
 standard and makes no claim to that status. It is a specification prepared so
-that it *could* be reviewed under that process: every normative statement is
-numbered, checkable, and carries a row in Annex A naming the evidence that
-satisfies it — an executable test where the requirement reduces to one, and a
-named artifact where it does not.
+that it *could* be reviewed under that process: every implementation requirement
+in **Clauses 4–9** is numbered, checkable, and carries a row in Annex A naming
+the evidence that satisfies it — an executable test where the requirement reduces
+to one, and a named artifact where it does not. Clause 1.4's own *shall*
+statements are excluded and say why.
 
 ---
 
