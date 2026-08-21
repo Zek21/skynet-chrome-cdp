@@ -18,11 +18,11 @@ Three rules it follows:
   2. REPORT DISTRIBUTIONS. A mean hides the tail that actually breaks automation.
      Percentiles are nearest-rank, stated here so the arithmetic is auditable.
 
-  3. SEPARATE THE FLOOR FROM THE LIBRARY. `Runtime.evaluate` on a trivial
+  3. SEPARATE THE BASELINE FROM THE LIBRARY. `Runtime.evaluate` on a trivial
      expression is the SEQUENTIAL BASELINE: one request, one response, no page
      work, nothing else in flight. It is a measured reference point, not a
      theoretical minimum -- batching and concurrency are not measured here.
-     Everything else in this report should be read as work done above that floor.
+     Everything else in this report should be read as work done above it.
 """
 from __future__ import annotations
 
@@ -171,7 +171,7 @@ def run(port: int = 9222, samples: int = 200, fixture: str = "synthetic",
             built = tab.evaluate(FIXTURE_JS)
             report["fixture_detail"] = built
 
-        # 1. Protocol floor
+        # 1. Sequential baseline
         for _ in range(WARMUP_SAMPLES):
             tab.evaluate("1+1")
         rtt: list[float] = []
