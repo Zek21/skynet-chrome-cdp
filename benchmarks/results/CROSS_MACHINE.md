@@ -49,18 +49,25 @@ work is.
 deviation to 16.4 ms. Run B2 is nearly three times slower at the median and
 vastly more predictable, maxing out at 2.48 ms.
 
-Note how well that stall hides. A mean ranks these two runs in an order that
-tells you nothing useful — but the percentiles do not catch it either. B1's p99
-is **2.1815 ms**, *lower* than B2's 1.9931 ms is high, and well under the 232 ms
-sample: one observation in two hundred sits at the 99.5th percentile, above where
-p99 looks. Every percentile column reports B1 as the faster, steadier run.
+Read the columns left to right and watch the stall come into focus.
 
-The stall appears in exactly two columns, **max** and **stdev**. That is the
-argument for [Clause 8.5](../../SPEC.md) requiring minimum, median, p90, p99,
-maximum *and* standard deviation rather than any subset of them. A 232 ms pause
+At **p50 and p90**, B1 is simply the faster run. At **p99** it has already turned
+— 2.1815 ms against B2's 1.9931 ms — but only slightly, and nothing in that
+figure hints at a 232 ms event: one observation in two hundred sits at the 99.5th
+percentile, above where p99 looks at all.
+
+**Max and stdev** are where it becomes unmistakable: 232.6731 against 2.4824, and
+16.4113 of spread against 0.2887.
+
+The **mean** moves as well, in fairness: one 232 ms sample spread over 200
+observations adds roughly 1.16 ms, which against a ~0.36 ms baseline is not
+subtle. But it absorbs the outlier into an average rather than identifying it as
+a single event — it reports a slower run, not a stalling one.
+
+That is the argument for [Clause 8.5](../../SPEC.md) requiring minimum, median,
+p90, p99, maximum *and* standard deviation rather than any subset. A 232 ms pause
 inside a loop of thousands of calls is what trips a production timeout, and at
-n=200 it is visible only in the two statistics most often dropped for being
-unglamorous.
+n=200 only two of those columns say so plainly.
 
 **Machine B is roughly 2× slower on CPU-bound page work** — DOM serialisation and
 accessibility tree — which tracks with 4 cores against 6. Screenshot capture is
