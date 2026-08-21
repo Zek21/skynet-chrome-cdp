@@ -333,7 +333,7 @@ test, `pytest tests/` runs it; where the requirement is satisfied by an artifact
 a manifest field, a report key, an ignore rule — the row names the artifact
 instead of pretending a unit test covers it.
 
-| Clause | Requirement | Test |
+| Clause | Requirement | Evidence (executable test, or named artifact) |
 |--------|-------------|------|
 | 4.2 | stdlib only | `test_transport.py` (imports), `pyproject.toml` has no runtime deps |
 | 5.2 | foreign tab mutation refused | `test_cdp.py::test_mutating_a_foreign_tab_raises` |
