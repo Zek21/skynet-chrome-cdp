@@ -65,9 +65,14 @@ procedure that a third party can re-run and disagree with.
 An implementation is **conforming** if it satisfies every *shall* in Clauses 4
 through 9 and satisfies the corresponding Annex A evidence row — passing the
 named test where the row cites one, and exhibiting the named artifact where it
-does not. Partial conformance
-shall not be claimed; a connector that satisfies Clause 5 but not Clause 7 is
-non-conforming and shall be described as such.
+does not. Partial conformance shall not be claimed; a connector that satisfies
+Clause 5 but not Clause 7 is non-conforming and shall be described as such.
+
+*The two* shall *statements in this clause govern how conformance is CLAIMED, not
+what an implementation must do, so they carry no Annex A row -- their evidence is
+the claim a reader is looking at. Annex A covers the implementation requirements
+of Clauses 4-9, and any statement that "every* shall *is mapped" should be read
+with that scope.*
 
 Clauses 4–9 contain **33** *shall*-bearing clauses and Annex A carries a row for
 each. Some rows cite an executable test; others cite the artifact that satisfies
