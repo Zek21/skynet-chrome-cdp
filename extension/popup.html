@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font: 13px system-ui, sans-serif; width: 300px; margin: 0; padding: 14px; }
+    h1 { font-size: 13px; margin: 0 0 10px; letter-spacing: .04em; text-transform: uppercase; color: #555; }
+    .row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee; }
+    .k { color: #666; }
+    .v { font-family: ui-monospace, Consolas, monospace; }
+    .ok { color: #0a7f3f; } .bad { color: #b00020; }
+    .err { margin-top: 10px; color: #b00020; font-size: 12px; word-break: break-word; }
+  </style>
+</head>
+<body>
+  <h1>Skynet Chrome CDP</h1>
+  <div class="row"><span class="k">Pairing</span><span class="v" id="paired">…</span></div>
+  <div class="row"><span class="k">Extension</span><span class="v" id="ext">…</span></div>
+  <div class="row"><span class="k">Bridge</span><span class="v" id="bridge">…</span></div>
+  <div class="row"><span class="k">Last contact</span><span class="v" id="seen">…</span></div>
+  <div class="err" id="err"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

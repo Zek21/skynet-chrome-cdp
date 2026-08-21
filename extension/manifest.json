@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Skynet Chrome CDP Connector",
+  "version": "1.3.0",
+  "description": "Pairs this browser profile with a local Skynet Chrome CDP bridge over an authenticated loopback connection.",
+  "permissions": [
+    "tabs",
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Skynet Chrome CDP Connector"
+  },
+  "icons": {
+    "128": "icon128.png"
+  }
+}
