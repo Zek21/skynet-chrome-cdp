@@ -1,6 +1,6 @@
 """RFC 6455 WebSocket transport, standard library only.
 
-Every other Python CDP client depends on `websocket-client` or `websockets`. That
+The common Python CDP clients depend on `websocket-client` or `websockets`. That
 is a reasonable choice and this project deliberately does not make it, for one
 operational reason: this connector's job is to attach to a browser that is already
 running on a machine somebody else administers. On those machines `pip install` is

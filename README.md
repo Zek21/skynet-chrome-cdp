@@ -40,10 +40,13 @@ session-attached connector does not sign in. It uses the session a human already
 established.
 
 **2. It has no dependencies.** Not "few" — none. The WebSocket layer is ~200
-lines of `socket` and `struct`. Every other Python CDP client requires
-`websocket-client` or `websockets`, which is fine until the machine you need to
-automate is a locked-down corporate image, a container built from a lockfile, or
-a host you reach only through a command channel. This library can be copied as a
+lines of `socket` and `struct`.
+
+That is a constraint this project accepts, not a claim about what everyone else
+does. The common Python CDP clients pull in `websocket-client` or `websockets`,
+which is a perfectly reasonable choice — until the machine you need to automate
+is a locked-down corporate image, a container built from a lockfile, or a host
+you reach only through a command channel. This library can be copied as a single
 file and run.
 
 **3. It refuses to touch tabs it does not own.** The browser it drives contains

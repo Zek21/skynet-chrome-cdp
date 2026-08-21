@@ -13,8 +13,10 @@ open a TCP connection to that port** the ability to:
 - execute arbitrary JavaScript in any origin the browser has loaded;
 - observe every network request the browser makes.
 
-There is no per-site permission model on that port. It is root access to the
-browser identity.
+There is no per-site permission model on that port and no authentication in
+front of it: the capabilities listed above are available to any local process
+that can connect. Scope them by choosing which profile sits behind the port,
+because nothing else will.
 
 This is not a defect in this library or in Chrome — it is what the DevTools
 Protocol is for. It matters here because a session-attached connector is, by
