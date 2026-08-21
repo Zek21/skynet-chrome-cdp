@@ -211,8 +211,10 @@ This library takes control of a browser holding live sessions. Read
 
 [SPEC.md](SPEC.md) is a numbered, testable specification written in the structure
 IEEE standards use. It is **not** an IEEE-published standard and does not claim to
-be — it is written so it could be reviewed under that process. Every `shall` maps
-to an executable test in Annex A.
+be — it is written so it could be reviewed under that process. All 33 `shall`
+clauses carry an Annex A row naming their evidence: an executable test where the
+requirement reduces to one, a named artifact such as a manifest field where it
+does not.
 
 ```bash
 pytest tests/          # 81 tests
