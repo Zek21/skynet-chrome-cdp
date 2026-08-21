@@ -79,8 +79,9 @@ sufficiently tight production timeout, and
 at n=200 only two of those columns say so plainly.
 
 **Machine B is roughly 2× slower on DOM serialisation and accessibility-tree
-extraction**, which is consistent with 4 cores against 6 — but the AX row carries
-a confound that has to be stated before that reading is taken seriously.
+extraction.** The configurations differ in operating system, core count and
+Python version at once, so nothing here isolates a cause — and the AX row carries
+a further confound that has to be stated before anyone reaches for one.
 
 **The two machines did not build the same accessibility tree.** From the same
 fixture, machine A produced **1,684** nodes and machine B **1,244** — 26% fewer.
