@@ -91,10 +91,11 @@ ignored nodes, whose population varies by platform. Machine B was therefore
 were never isolated from each other here, and this benchmark does not separate
 them: the timings stand, the cause does not.
 
-**Screenshot capture does not follow that ordering.** 73.98–76.11 ms on machine B
-against 78.03–82.14 ms on machine A — marginally *faster* on the machine with
-fewer cores. Core count does not explain the ordering here, and this benchmark
-does not profile the cause, so the observation is recorded without one.
+**Screenshot capture runs the other way.** 73.98–76.11 ms on machine B against
+78.03–82.14 ms on machine A — marginally *faster* on the machine with fewer
+cores, an ordering opposite to the core-count ordering. That does not establish
+core count is irrelevant here; it was not isolated, and this benchmark does not
+profile the cause, so the observation is recorded without one.
 
 **The perception reduction was identical on both machines: 12.22×**, from 55,945
 DOM characters to 4,579 scene characters. That is the fixture doing its job. A
