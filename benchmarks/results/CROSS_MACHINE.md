@@ -8,6 +8,9 @@ The remote runs were executed by an operator on the second machine, who fetched
 `standalone_benchmark.py` over HTTPS and ran it with no install step — the
 zero-dependency property is what made that possible.
 
+An identical fixture is not the same as identical browser-internal work; see the
+accessibility-tree note below before reading the AX row as a hardware result.
+
 ## Hosts
 
 | | A | B |
@@ -72,8 +75,16 @@ pause inside a loop of thousands of calls is what trips a production timeout, an
 at n=200 only two of those columns say so plainly.
 
 **Machine B is roughly 2× slower on DOM serialisation and accessibility-tree
-extraction**, which is consistent with 4 cores against 6 — though nothing here
-profiles the cause, so read it as correlation rather than explanation.
+extraction**, which is consistent with 4 cores against 6 — but the AX row carries
+a confound that has to be stated before that reading is taken seriously.
+
+**The two machines did not build the same accessibility tree.** From the same
+fixture, machine A produced **1,684** nodes and machine B **1,244** — 26% fewer.
+The actionable subset was 240 on both, so the difference lies in generic and
+ignored nodes, whose population varies by platform. Machine B was therefore
+~1.85× slower while building a materially smaller tree. Core count and tree size
+were never isolated from each other here, and this benchmark does not separate
+them: the timings stand, the cause does not.
 
 **Screenshot capture does not follow that ordering.** 73.98–76.11 ms on machine B
 against 78.03–82.14 ms on machine A — marginally *faster* on the machine with
