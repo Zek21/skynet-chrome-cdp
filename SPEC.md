@@ -9,7 +9,9 @@ This document is written in the structure and language conventions used by IEEE
 standards (IEEE Std 830 / 1016 / 29148 lineage). It is **not** an IEEE-published
 standard and makes no claim to that status. It is a specification prepared so
 that it *could* be reviewed under that process: every normative statement is
-numbered, testable, and mapped in Annex A to an executable test.
+numbered, checkable, and carries a row in Annex A naming the evidence that
+satisfies it — an executable test where the requirement reduces to one, and a
+named artifact where it does not.
 
 ---
 
@@ -324,7 +326,10 @@ process or visited page can execute authenticated actions in the user's session.
 
 ## Annex A (normative) — Conformance test mapping
 
-Each requirement maps to an executable test. `pytest tests/` runs all of them.
+Each requirement carries a row naming its evidence. Where that evidence is a
+test, `pytest tests/` runs it; where the requirement is satisfied by an artifact —
+a manifest field, a report key, an ignore rule — the row names the artifact
+instead of pretending a unit test covers it.
 
 | Clause | Requirement | Test |
 |--------|-------------|------|
