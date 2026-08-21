@@ -98,8 +98,10 @@ does not profile the cause, so the observation is recorded without one.
 **The perception reduction was identical on both machines: 12.22×**, from 55,945
 DOM characters to 4,579 scene characters. That is the fixture doing its job. A
 figure that reproduces exactly across two different operating systems, core
-counts, and Python versions is a property of the measurement, not of the machine
-— which is what `comparable_across_machines: true` is asserting.
+counts, and Python versions reproduced **on both tested configurations** — which
+is what `comparable_across_machines: true` asserts. It does not exclude a shared
+artefact of the fixture, the Chrome version, the extraction algorithm or the
+encoding, since both machines ran all four identically.
 
 One difference worth recording: machine A's accessibility tree contained 1,684
 nodes and machine B's 1,244, for the same DOM. The count of *actionable* nodes
