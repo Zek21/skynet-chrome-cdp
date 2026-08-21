@@ -217,11 +217,13 @@ def write_token_file(path: str, token: str) -> str:
 
     WINDOWS IS NOT POSIX HERE. `os.open(..., S_IRUSR|S_IWUSR)` looks like it
     restricts the file, and `os.stat().st_mode` will even report something
-    plausible, but NTFS ignores those bits entirely -- access is decided by an
-    ACL the file INHERITS from its parent directory. A token written this way in
-    a shared or roamed folder is readable by anyone the parent grants. This was
-    caught by a test asserting the group/other bits were clear; on Windows they
-    were not, and the mode bits were decorative either way.
+    plausible, but READ access on NTFS is decided by an ACL the file INHERITS
+    from its parent directory, not by those bits. (They are not discarded
+    outright -- the write bit maps onto the read-only attribute -- but nothing in
+    them yields owner-only read semantics, which is the whole reason to write
+    0600 for a secret.) A token written this way in a shared or roamed folder is
+    readable by anyone the parent grants. This was caught by a test asserting the
+    group/other bits were clear; on Windows they were not.
 
     So on Windows the inherited ACL is stripped and a single explicit grant to
     the current user is applied.

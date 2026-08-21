@@ -311,7 +311,9 @@ such principals unavoidable overstates the platform constraint and invites an
 implementation to tolerate more than it should.*
 
 *Rationale: writing a secret with POSIX mode `0600` on Windows produces a file
-whose permissions are decided by an inherited NTFS ACL; the mode bits are inert.
+whose read access is decided by an inherited NTFS ACL. The mode bits are not
+wholly discarded — the write bit maps onto the read-only attribute — but nothing
+in them yields owner-only read semantics.
 An implementation that checks only the mode bits reports a protection it does not
 have.*
 

@@ -80,8 +80,8 @@ to read the secret, while causing the check to fail on files that are in fact
 correctly protected.
 
 This was found by a test, not by review. The test asserted the POSIX group/other
-bits were clear; it passed on Linux and failed on Windows, where the mode bits
-were decorative.
+bits were clear; it passed on Linux and failed on Windows, where those bits do
+not control read access at all.
 
 ## Recommended configuration
 
