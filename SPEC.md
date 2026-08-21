@@ -239,9 +239,10 @@ measured length of the emitted scene, not from an assumed per-element cost.
 *Rationale: this requirement exists because of an observed defect. A build of the
 reference implementation divided a 55,945-character document by a 42-character
 empty scene and reported a 1332× reduction — the largest figure it ever produced,
-on a page where perception had failed completely. Any metric of the form
-`before/after` will report a failure of the "after" stage as a spectacular
-success unless this case is explicitly excluded.*
+on a page where perception had failed completely. An UNGUARDED ratio of the form
+`before/after` cannot distinguish a failed "after" stage from a spectacularly
+successful one, because both collapse the denominator; the exclusion required
+here is what makes the difference.*
 
 **7.6** Reported reduction ratios **shall** be accompanied by an identification
 of the document measured, and **shall not** be presented as a property of the
