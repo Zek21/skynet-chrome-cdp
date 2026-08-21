@@ -191,3 +191,63 @@ class BoundaryTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TokenWriteOrderTest(unittest.TestCase):
+    """The secret must never exist on disk under un-hardened permissions.
+
+    An earlier implementation wrote the token and THEN hardened the ACL, leaving
+    a window in which the secret sat under whatever the parent directory granted
+    -- inside a function whose docstring promises the opposite. It also ignored
+    the return value of the hardening call, so a failure still handed back a path
+    as though it were protected.
+    """
+
+    def test_the_file_is_hardened_before_the_secret_is_written(self):
+        """Order is asserted on the source, because the window is not observable
+        after the fact: by the time the call returns, both steps have run."""
+        import inspect
+        from skynet_chrome_cdp import handshake
+        src = inspect.getsource(handshake.write_token_file)
+        harden = src.index("_restrict_windows_acl")
+        write = src.index("os.write(handle")
+        self.assertLess(harden, write,
+                        "the ACL must be established before the token is written")
+
+    def test_a_failed_hardening_raises_and_leaves_no_file(self):
+        from skynet_chrome_cdp import handshake
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "token")
+            original = handshake._restrict_windows_acl
+            handshake._restrict_windows_acl = lambda _p: False
+            try:
+                if sys.platform == "win32":
+                    with self.assertRaises(PermissionError):
+                        handshake.write_token_file(path, generate_token())
+                    self.assertFalse(os.path.exists(path),
+                                     "an unprotectable token file must not survive")
+                else:
+                    handshake.write_token_file(path, generate_token())
+            finally:
+                handshake._restrict_windows_acl = original
+
+    def test_a_failed_privacy_verification_raises_and_leaves_no_file(self):
+        from skynet_chrome_cdp import handshake
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "token")
+            original = handshake.token_file_is_private
+            handshake.token_file_is_private = lambda _p: False
+            try:
+                with self.assertRaises(PermissionError):
+                    handshake.write_token_file(path, generate_token())
+                self.assertFalse(os.path.exists(path))
+            finally:
+                handshake.token_file_is_private = original
+
+    def test_the_happy_path_still_round_trips(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "nested", "token")
+            token = generate_token()
+            written = write_token_file(path, token)
+            self.assertEqual(read_token_file(written), token)
+            self.assertTrue(token_file_is_private(written))

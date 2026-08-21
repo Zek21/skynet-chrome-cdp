@@ -227,20 +227,52 @@ def write_token_file(path: str, token: str) -> str:
 
     So on Windows the inherited ACL is stripped and a single explicit grant to
     the current user is applied.
+
+    ORDER MATTERS, AND IT WAS WRONG. An earlier version wrote the secret and then
+    hardened the ACL, so the token existed on disk under the inherited permissions
+    for a window -- in a function whose entire promise is that it never does. It
+    also discarded `_restrict_windows_acl`'s return value, so a failed hardening
+    still returned a path as though it were protected.
+
+    Now: create the file EMPTY, harden it, verify the result, and only then write
+    the secret. If hardening or verification fails the file is removed and the
+    call raises, because a token that cannot be protected must not exist.
     """
     directory = os.path.dirname(os.path.abspath(path))
     if directory:
         os.makedirs(directory, exist_ok=True)
+    absolute = os.path.abspath(path)
+
+    # 1. Create empty, owner-only where the platform honours mode bits.
     flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-    handle = os.open(path, flags, stat.S_IRUSR | stat.S_IWUSR)
+    os.close(os.open(absolute, flags, stat.S_IRUSR | stat.S_IWUSR))
+
+    # 2. Harden BEFORE any secret exists in it, and fail closed if that cannot
+    #    be done -- an unprotectable location is not somewhere a token goes.
+    try:
+        if sys.platform == "win32" and not _restrict_windows_acl(absolute):
+            raise PermissionError(
+                f"could not restrict the ACL on {absolute}; refusing to write a "
+                f"secret to a file whose permissions cannot be established"
+            )
+        if not token_file_is_private(absolute):
+            raise PermissionError(
+                f"{absolute} is readable by other principals after hardening; "
+                f"refusing to write a secret there"
+            )
+    except Exception:
+        try:
+            os.unlink(absolute)
+        except OSError:
+            pass
+        raise
+
+    # 3. Only now does the secret touch the disk.
+    handle = os.open(absolute, os.O_WRONLY | os.O_TRUNC)
     try:
         os.write(handle, token.encode("utf-8"))
     finally:
         os.close(handle)
-
-    absolute = os.path.abspath(path)
-    if sys.platform == "win32":
-        _restrict_windows_acl(absolute)
     return absolute
 
 
