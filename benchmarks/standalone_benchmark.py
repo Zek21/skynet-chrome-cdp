@@ -581,6 +581,15 @@ def render_human(report):
     out.append("-" * 62)
     for n in report.get("notes", []):
         out.append(f"note: {n}")
+    # Printed because it was NOT printed. A reviewer running this on another
+    # machine reported that the human output computes own_tab_closed and then
+    # hides it, so they could not honestly state whether the benchmark had
+    # cleaned up after itself -- and correctly declined to claim it had. A
+    # hygiene field that only appears under --json is a hygiene field nobody
+    # checks.
+    closed = report.get("own_tab_closed")
+    if closed is not None:
+        out.append(f"own tab closed   : {closed}")
     out.append(f"duration: {report.get('duration_s')}s")
     return "\n".join(out)
 

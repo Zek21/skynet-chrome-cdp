@@ -1,0 +1,86 @@
+{
+  "benchmark_version": "1.0.0",
+  "mode": "raw",
+  "fixture": "synthetic",
+  "port": 9226,
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.7",
+    "processor": "Intel64 Family 6 Model 158 Stepping 10, GenuineIntel",
+    "cpu_count": 6,
+    "node": "Zeke"
+  },
+  "comparable_across_machines": true,
+  "measurements": {
+    "attach_ms": 150.671,
+    "evaluate_rtt": {
+      "n": 200,
+      "min_ms": 0.2849,
+      "p50_ms": 0.2996,
+      "p90_ms": 0.3827,
+      "p99_ms": 2.1797,
+      "max_ms": 2.427,
+      "mean_ms": 0.3592,
+      "stdev_ms": 0.2789
+    },
+    "dom_serialize": {
+      "n": 20,
+      "min_ms": 10.7688,
+      "p50_ms": 11.1418,
+      "p90_ms": 11.5831,
+      "p99_ms": 16.0097,
+      "max_ms": 16.0097,
+      "mean_ms": 11.4634,
+      "stdev_ms": 1.133
+    },
+    "dom_chars": 55945,
+    "ax_tree": {
+      "n": 20,
+      "min_ms": 46.2865,
+      "p50_ms": 47.1669,
+      "p90_ms": 57.3677,
+      "p99_ms": 63.6664,
+      "max_ms": 63.6664,
+      "mean_ms": 49.3349,
+      "stdev_ms": 4.6621
+    },
+    "ax_nodes": 1684,
+    "actionable_nodes": 240,
+    "scene_chars": 4579,
+    "reduction_ratio": 12.22,
+    "scene_sample": [
+      "textbox \"Field 0\"",
+      "button \"Submit 0\"",
+      "textbox \"Field 1\""
+    ],
+    "screenshot": {
+      "n": 10,
+      "min_ms": 77.7178,
+      "p50_ms": 82.1425,
+      "p90_ms": 95.2981,
+      "p99_ms": 95.564,
+      "max_ms": 95.564,
+      "mean_ms": 86.1206,
+      "stdev_ms": 7.3103
+    },
+    "screenshot_bytes": 119683,
+    "ops_per_second_p50": 3337.8
+  },
+  "notes": [
+    "reduction_ratio = raw DOM chars / measured scene chars, where the scene is one 'role \"name\"' line per actionable node. The ratio is a property of the FIXTURE as much as the connector: a form-dense page has many actionable nodes and reduces less than a content page."
+  ],
+  "browser": {
+    "product": "Chrome/151.0.7922.140",
+    "protocol_version": "1.3",
+    "v8": "15.1.206.17"
+  },
+  "fixture_detail": {
+    "interactive": 120,
+    "text_blocks": 200,
+    "elements": 685
+  },
+  "duration_s": 2.39,
+  "ok": true,
+  "own_tab_closed": true,
+  "label": "local-Zeke-run2"
+}
