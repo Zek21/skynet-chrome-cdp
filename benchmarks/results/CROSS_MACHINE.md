@@ -25,7 +25,7 @@ accessibility-tree note below before reading the AX row as a hardware result.
 | Chrome | 151.0.7922.140 | 151.0.7922.140 |
 | CDP | 1.3 | 1.3 |
 
-## Protocol floor — `Runtime.evaluate("1+1")`, n=200
+## Sequential baseline — `Runtime.evaluate("1+1")`, n=200
 
 | Run | p50 | p90 | p99 | max | stdev | ops/s @p50 |
 |-----|-----|-----|-----|-----|-------|-----------|
@@ -46,9 +46,12 @@ All times in milliseconds.
 
 ## What these numbers say
 
-**The floor is sub-millisecond on both machines.** A p50 of 0.30–0.76 ms means
-the protocol is not the bottleneck in any realistic automation workload; page
-work is.
+**The sequential baseline is sub-millisecond on both machines**, p50 0.30–0.76 ms.
+Read against the page operations below — 11–24 ms to serialise a document, 46–88
+ms for an accessibility tree — a single round trip is the cheapest thing measured
+here. That is a comparison between these measurements, not a claim about where
+the bottleneck sits in any particular workload, which would depend on the mix of
+calls that workload makes.
 
 **Run B1 is the interesting one.** Its p50 (0.3627 ms) is better than run B2's
 (0.7598 ms), but it contains a single 232 ms sample that drags the standard
