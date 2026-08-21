@@ -66,8 +66,8 @@ a single event — it reports a slower run, not a stalling one.
 
 That is the argument for [Clause 8.5](../../SPEC.md) requiring minimum, median,
 p90, p99, maximum *and* standard deviation rather than any subset of them. These
-remain **summary statistics** — the full distribution would be all 200 samples —
-but taken together they describe the shape, and a mean alone does not. A 232 ms
+remain **summary statistics** rather than the 200 underlying samples, but taken
+together they describe the shape of a run, and a mean alone does not. A 232 ms
 pause inside a loop of thousands of calls is what trips a production timeout, and
 at n=200 only two of those columns say so plainly.
 
@@ -75,10 +75,10 @@ at n=200 only two of those columns say so plainly.
 extraction**, which is consistent with 4 cores against 6 — though nothing here
 profiles the cause, so read it as correlation rather than explanation.
 
-**Screenshot capture is the exception.** 73.98–76.11 ms on machine B against
-78.03–82.14 ms on machine A: it did not scale with cores and was marginally
-*faster* on the slower box. Something other than CPU parallelism dominates it.
-This benchmark does not measure what, and no claim is made.
+**Screenshot capture does not follow that ordering.** 73.98–76.11 ms on machine B
+against 78.03–82.14 ms on machine A — marginally *faster* on the machine with
+fewer cores. Core count does not explain the ordering here, and this benchmark
+does not profile the cause, so the observation is recorded without one.
 
 **The perception reduction was identical on both machines: 12.22×**, from 55,945
 DOM characters to 4,579 scene characters. That is the fixture doing its job. A
