@@ -49,11 +49,18 @@ work is.
 deviation to 16.4 ms. Run B2 is nearly three times slower at the median and
 vastly more predictable, maxing out at 2.48 ms.
 
-A benchmark reporting only a mean would rank these two runs in an order that
-tells you nothing useful. This is the entire reason [Clause 8.5](../../SPEC.md)
-requires a distribution: automation reliability is governed by the tail, and a
-single 232 ms stall in a loop of thousands of calls is the thing that breaks a
-timeout.
+Note how well that stall hides. A mean ranks these two runs in an order that
+tells you nothing useful — but the percentiles do not catch it either. B1's p99
+is **2.1815 ms**, *lower* than B2's 1.9931 ms is high, and well under the 232 ms
+sample: one observation in two hundred sits at the 99.5th percentile, above where
+p99 looks. Every percentile column reports B1 as the faster, steadier run.
+
+The stall appears in exactly two columns, **max** and **stdev**. That is the
+argument for [Clause 8.5](../../SPEC.md) requiring minimum, median, p90, p99,
+maximum *and* standard deviation rather than any subset of them. A 232 ms pause
+inside a loop of thousands of calls is what trips a production timeout, and at
+n=200 it is visible only in the two statistics most often dropped for being
+unglamorous.
 
 **Machine B is roughly 2× slower on CPU-bound page work** — DOM serialisation and
 accessibility tree — which tracks with 4 cores against 6. Screenshot capture is
