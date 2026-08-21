@@ -75,9 +75,10 @@ So on Windows the inherited ACL is stripped (`icacls /inheritance:r`) and a sing
 explicit grant is applied to the current user. `SYSTEM`, `Administrators` and `OWNER RIGHTS` are tolerated on the resulting
 ACL. Not because they cannot be removed — they can — but because a local
 administrator can take ownership of any file and rewrite its DACL anyway.
-Stripping their ACE would change what the audit trail looks like, not who is able
-to read the secret, while causing the check to fail on files that are in fact
-correctly protected.
+Stripping their ACE does change who may read the file directly — but it cannot
+prevent a sufficiently privileged local administrator from ultimately obtaining
+access, since they can take ownership and rewrite the DACL. It would, meanwhile,
+cause the check to fail on files that are in fact correctly protected.
 
 This was found by a test, not by review. The test asserted the POSIX group/other
 bits were clear; it passed on Linux and failed on Windows, where those bits do

@@ -311,8 +311,9 @@ principal access.
 *Rationale for "tolerated" rather than "unavoidable": on Windows a DACL can in
 fact be written without an Administrators ACE. The reason to permit one is
 narrower — a local administrator can take ownership of any file and rewrite its
-DACL, so removing the entry changes the audit trail rather than who can read the
-secret, while causing the check to fail on a correctly protected file. Calling
+DACL. Removing the entry therefore cannot prevent a sufficiently privileged local
+administrator from ultimately obtaining access, while it would cause the check to
+fail on a correctly protected file. Calling
 such principals unavoidable overstates the platform constraint and invites an
 implementation to tolerate more than it should.*
 

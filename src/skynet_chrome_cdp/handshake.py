@@ -68,8 +68,8 @@ _SEMVER = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$")
 # A DACL can be written without an Administrators ACE, and `icacls /inheritance:r`
 # plus a single grant will produce one. The reason to tolerate them is different
 # and narrower: a local administrator can take ownership of any file and rewrite
-# its DACL, so removing their ACE does not deny them the token. It changes what
-# the audit log looks like, not who can read the secret.
+# its DACL, so removing their ACE cannot prevent them from ultimately obtaining
+# the token -- it only changes whether they must take that step first.
 #
 # Refusing to tolerate them would therefore fail the check on a correctly
 # protected file while buying no protection. What the check MUST still catch is a
