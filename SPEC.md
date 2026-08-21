@@ -65,6 +65,15 @@ through 9 and passes the corresponding tests in Annex A. Partial conformance
 shall not be claimed; a connector that satisfies Clause 5 but not Clause 7 is
 non-conforming and shall be described as such.
 
+Clauses 4–9 contain **33** *shall*-bearing clauses and Annex A carries a row for
+each. Some rows cite an executable test; others cite the artifact that satisfies
+the requirement, such as a manifest field or a report key, because not every
+requirement of this kind reduces to a unit test. Both forms are auditable, and
+the distinction is stated rather than blurred.
+
+An earlier revision claimed every statement was mapped while **15** had no Annex A
+entry at all. Traceability is worth claiming only after somebody has counted.
+
 ---
 
 ## 2. Normative references
@@ -283,9 +292,19 @@ user's authenticated browser.*
 extension.
 
 **9.4** The shared secret **shall** be stored such that no principal other than
-the current user and the platform's unavoidable privileged principals may read
+the current user and a documented set of tolerated privileged principals may read
 it, and the implementation **shall** verify this using the mechanism the platform
-actually enforces.
+actually enforces. The tolerated set **shall** be enumerated, and each entry
+**shall** be justified by the fact that excluding it would not deny that
+principal access.
+
+*Rationale for "tolerated" rather than "unavoidable": on Windows a DACL can in
+fact be written without an Administrators ACE. The reason to permit one is
+narrower — a local administrator can take ownership of any file and rewrite its
+DACL, so removing the entry changes the audit trail rather than who can read the
+secret, while causing the check to fail on a correctly protected file. Calling
+such principals unavoidable overstates the platform constraint and invites an
+implementation to tolerate more than it should.*
 
 *Rationale: writing a secret with POSIX mode `0600` on Windows produces a file
 whose permissions are decided by an inherited NTFS ACL; the mode bits are inert.
@@ -330,6 +349,21 @@ Each requirement maps to an executable test. `pytest tests/` runs all of them.
 | 9.1 | non-loopback refused | `test_handshake.py::test_wildcard_bind_is_refused` |
 | 9.2 | constant-time comparison | `test_handshake.py::test_verify_accepts_only_the_exact_token` |
 | 9.3 | origin verified | `test_handshake.py::test_origin_must_match_the_paired_extension` |
+| 4.1 | four layers, each usable alone | package exposes `transport`, `cdp`, `perception`, `handshake` independently; `test_transport.py` imports L1 only |
+| 4.3 | no upward dependency | `test_transport.py` (L1 tested without L2–L4) |
+| 5.1 | every target classified owned/foreign | `test_cdp.py::test_a_listed_tab_is_foreign`, `test_new_tab_is_owned_and_mutable` |
+| 5.6 | profile state not altered | no cookie/storage write exists in `cdp.py`; `Tab.cookies()` is read-only |
+| 6.1 | versions exchanged before commands | `test_handshake.py::test_matching_versions_are_accepted` |
+| 7.2 | on-screen decided by hit test | `perception.py` `_COLLECT_JS` `elementFromPoint`; `test_perception.py::test_actionable_is_only_what_can_be_clicked_now` |
+| 7.6 | ratio names the document measured | `benchmark.py` emits `fixture`, `fixture_detail` beside `reduction_ratio` |
+| 8.1 | fixture, samples, percentile, host published | `benchmark.py` report fields `fixture`, `evaluate_rtt.n`, `host` |
+| 8.2 | self-built synthetic fixture, no network | `test_cdp.py::test_fixture_declares_its_own_dimensions`, `test_fixture_interleaves_controls_with_text` |
+| 8.4 | protocol floor reported separately | `benchmark.py` `measurements.evaluate_rtt` |
+| 8.5 | distribution, not a mean alone | `test_cdp.py::test_summary_matches_hand_computed_values` |
+| 8.6 | warm-up discarded and stated | `benchmark.py` `WARMUP_SAMPLES` |
+| 8.7 | reports whether a tab was left open | `test_cdp.py::test_a_tab_still_listed_reports_failure` |
+| 9.5 | no keys/profile ids/tokens distributed | `.gitignore` excludes `*.pem`, `*.crx`, `token`; extension ships no `key` |
+| 9.6 | minimum host permissions | `extension/manifest.json` `host_permissions` is `http://127.0.0.1/*` only |
 | 9.4 | platform-enforced secrecy | `test_handshake.py::test_token_file_is_private_on_this_platform` |
 | 9.4 | check can still fail | `test_handshake.py::test_privacy_check_catches_a_grant_to_everyone` |
 
