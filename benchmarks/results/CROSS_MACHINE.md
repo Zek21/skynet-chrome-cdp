@@ -74,7 +74,8 @@ That is the argument for [Clause 8.5](../../SPEC.md) requiring minimum, median,
 p90, p99, maximum *and* standard deviation rather than any subset of them. These
 remain **summary statistics** rather than the 200 underlying samples, but taken
 together they describe the shape of a run, and a mean alone does not. A 232 ms
-pause inside a loop of thousands of calls is what trips a production timeout, and
+pause inside a loop of thousands of calls is the kind of event that trips a
+sufficiently tight production timeout, and
 at n=200 only two of those columns say so plainly.
 
 **Machine B is roughly 2× slower on DOM serialisation and accessibility-tree

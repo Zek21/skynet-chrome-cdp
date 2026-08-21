@@ -63,7 +63,9 @@ procedure that a third party can re-run and disagree with.
 ### 1.4 Conformance
 
 An implementation is **conforming** if it satisfies every *shall* in Clauses 4
-through 9 and passes the corresponding tests in Annex A. Partial conformance
+through 9 and satisfies the corresponding Annex A evidence row — passing the
+named test where the row cites one, and exhibiting the named artifact where it
+does not. Partial conformance
 shall not be claimed; a connector that satisfies Clause 5 but not Clause 7 is
 non-conforming and shall be described as such.
 
