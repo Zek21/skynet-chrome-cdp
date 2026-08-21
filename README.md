@@ -230,6 +230,23 @@ pytest tests/          # 85 tests
 - **Not a Playwright replacement for testing.** For deterministic CI against a
   clean browser, use Playwright — that is what it is good at.
 
+---
+
+## Supporting this
+
+Chrome ships breaking changes on a roughly monthly cadence, and this connector
+attaches to the browser rather than launching one — so every change to the
+DevTools surface, the model of tab ownership, or the extension APIs lands here
+first. Clause 9.4 exists because Windows ACL behaviour is not what the obvious
+code assumes; the Chrome 136 note exists because a flag silently stopped working.
+Keeping that current is the actual cost of this project.
+
+If it saves you an afternoon, you can put something toward that:
+**[paypal.me/exzilcalanza](https://paypal.me/exzilcalanza)**
+
+Sponsorship, not equity or investment — it buys no stake and no influence over
+what ships. Issues and reproductions are worth more than money, and cost you less.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
