@@ -88,9 +88,9 @@ a further confound that has to be stated before anyone reaches for one.
 
 **The two machines did not build the same accessibility tree.** From the same
 fixture, machine A produced **1,684** nodes and machine B **1,244** — 26% fewer.
-The actionable subset was 240 on both, so the difference lies in generic and
-ignored nodes, whose population varies by platform. Machine B was therefore
-~1.85× slower while building a materially smaller tree. Core count and tree size
+The actionable subset was 240 on both. The difference is entirely
+`InlineTextBox` nodes — measured 2026-08-22, see the correction below. Machine B
+was therefore ~1.85× slower while building a tree with fewer nodes to walk. Core count and tree size
 were never isolated from each other here, and this benchmark does not separate
 them: the timings stand, the cause does not.
 
@@ -110,8 +110,40 @@ encoding, since both machines ran all four identically.
 
 One difference worth recording: machine A's accessibility tree contained 1,684
 nodes and machine B's 1,244, for the same DOM. The count of *actionable* nodes
-was 240 on both. The full tree includes generic and ignored nodes whose
-population varies by platform; the actionable subset does not.
+was 240 on both.
+
+### Correction, 2026-08-22
+
+An earlier version of this document attributed that 440-node gap to "generic and
+ignored nodes, whose population varies by platform". **That was wrong, and it is
+measurably wrong.** In this tree `ignored` is **2** and `generic` is **240 on
+both machines** — neither can account for a 440-node difference.
+
+The gap is entirely **`InlineTextBox`** nodes. Chrome emits them only when the
+active accessibility mode asks for them, and how many it emits tracks how the
+text is laid out. Measured on one host at four viewport widths, same fixture:
+
+| Viewport | AX nodes | InlineTextBox | AX − InlineTextBox |
+|---|---|---|---|
+| 800 px | 1,874 | 630 | **1,244** |
+| 1280 px | 1,684 | 440 | **1,244** |
+| 1920 px | 1,684 | 440 | **1,244** |
+| 2560 px | 1,684 | 440 | **1,244** |
+
+Subtracting them leaves 1,244 at every width — and machine B later reported
+`TOTAL 1684 / INLINETEXTBOX 440 / SEMANTIC 1244` directly, at a third window
+size. Both machines built the same semantic tree; only the raw counter moved.
+
+What is **not** established: machine B's original bare 1,244 total was never
+broken down by role, and in this tree three disjoint role sets each happen to
+total exactly 440 (`InlineTextBox`, `StaticText`, `generic`+`paragraph`).
+Attributing that first reading specifically to absent inline boxes is a
+well-supported inference, not a measurement.
+
+`standalone_benchmark.py` v2.0.0 therefore pins the viewport before measuring
+and reports `ax_nodes_semantic` (comparable) separately from `ax_nodes_raw` and
+`ax_inline_text_boxes` (host-dependent). Full write-up:
+<https://exzilcalanza.info/accessibility-tree-node-counts-not-machine-comparable-2026/>
 
 ## Defect found by the remote operator
 

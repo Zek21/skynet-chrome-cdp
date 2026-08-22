@@ -74,7 +74,10 @@ try:
 except Exception:
     pass
 
-BENCHMARK_VERSION = "1.0.0"
+# 2.0.0, not 1.1.0: the bare "ax_nodes" key was REMOVED, not deprecated. That
+# breaks any consumer of the 1.x artifact, and a consumer that silently reads a
+# missing key as zero is exactly the failure this change exists to prevent.
+BENCHMARK_VERSION = "2.0.0"
 DEFAULT_PORT = 9226
 DEFAULT_SAMPLES = 200
 WARMUP_SAMPLES = 20
@@ -82,6 +85,51 @@ WARMUP_SAMPLES = 20
 # Elements the synthetic fixture contains. Stated so a reader can reproduce it.
 FIXTURE_INTERACTIVE = 120
 FIXTURE_TEXT_BLOCKS = 200
+
+# The viewport the fixture is measured at. Pinned because part of the
+# accessibility tree is LAYOUT-DERIVED: Chrome emits InlineTextBox nodes only
+# when the active accessibility mode asks for them, and how many it emits tracks
+# how the text is laid out. So the RAW node count reads the window and the
+# browser's a11y mode, not the page.
+#
+# Measured 2026-08-22, Chrome 151.0.7922.140, identical synthetic fixture:
+#   host Zeke        800px -> 1874 raw (630 InlineTextBox)
+#   host Zeke  1280/1920/2560px -> 1684 raw (440 InlineTextBox)
+#   host DESKTOP-OJ9K9QR, run 1 -> 1244 raw   (role breakdown NOT captured)
+#   host DESKTOP-OJ9K9QR, run 2 -> 1684 raw (440 InlineTextBox), other instance
+# Run 2's role histogram matches this host's on all 8 roles it reported
+# (StaticText 440, generic 240, paragraph 200, LabelText 120, textbox 120,
+# button 120, none 2) -- distribution identity, not structural identity; the
+# parent/child edges were never compared.
+#
+# INFERRED, NOT MEASURED: that run 1's 1244 was InlineTextBox being absent. Width
+# cannot produce it -- InlineTextBox floors at 440 here (one per StaticText) and
+# does not move between 1280px and 2560px, so only an a11y-MODE difference gets
+# to 1244. Note 1684-440 is also 1684-StaticText and 1684-(generic+paragraph):
+# three disjoint role sets each total 440, so the arithmetic alone does not
+# single out InlineTextBox. Run 1's tree was never enumerated by role.
+BENCH_VIEWPORT = {"width": 1280, "height": 900, "deviceScaleFactor": 1,
+                  "mobile": False}
+
+# Nodes whose COUNT is a property of the host's layout/a11y mode rather than of
+# the page. Excluded from the cross-machine node count.
+LAYOUT_DERIVED_AX_ROLES = {"InlineTextBox"}
+
+# Which measurements survive a move to another machine, and which do not. Stated
+# in the artifact because a JSON file outlives the caveats told around it.
+COMPARABLE_MEASUREMENTS = (
+    "dom_chars", "ax_nodes_semantic", "actionable_nodes", "scene_chars",
+    "reduction_ratio",
+)
+HOST_DEPENDENT_MEASUREMENTS = (
+    "ax_nodes_raw", "ax_inline_text_boxes", "attach_ms", "evaluate_rtt",
+    "dom_serialize", "ax_tree", "screenshot", "screenshot_bytes",
+    "implied_calls_per_second_at_p50",
+)
+# Neither promised comparable nor known to vary: recorded to explain a tree, not
+# to be compared. Listed explicitly because a field in NEITHER list reads as an
+# oversight, and a reader will guess -- usually generously.
+DIAGNOSTIC_MEASUREMENTS = ("ax_ignored_nodes", "scene_sample", "dom_chars_note")
 
 
 # --------------------------------------------------------------------------
@@ -385,7 +433,14 @@ def run_benchmark(port, samples, fixture_mode, timeout):
             "cpu_count": os.cpu_count(),
             "node": platform.node(),
         },
-        "comparable_across_machines": fixture_mode == "synthetic",
+        # Set honestly AFTER the viewport is pinned. A synthetic fixture read at
+        # whatever size this window happens to be is NOT comparable: see
+        # BENCH_VIEWPORT for the two machines that proved it.
+        "comparable_across_machines": False,
+        "comparable_measurements": list(COMPARABLE_MEASUREMENTS),
+        "host_dependent_measurements": list(HOST_DEPENDENT_MEASUREMENTS),
+        "diagnostic_measurements": list(DIAGNOSTIC_MEASUREMENTS),
+        "viewport": None,
         "measurements": {},
         "notes": [],
     }
@@ -428,12 +483,57 @@ def run_benchmark(port, samples, fixture_mode, timeout):
     except (URLError, OSError, ValueError, WSError) as exc:
         return None, f"could not attach: {exc}"
 
+    viewport_pinned = False  # bound here so the finally can always read it
     try:
         connect_ms = (time.time() - started) * 1000.0
         report["measurements"]["attach_ms"] = round(connect_ms, 3)
 
         cdp.call("Runtime.enable")
         cdp.call("Page.enable")
+
+        # Pin the viewport BEFORE measuring anything. Unpinned, the accessibility
+        # node count is a reading of THIS window's width rather than of the page,
+        # and two honest machines report numbers hundreds of nodes apart.
+        # ONLY on a tab this process created. In --fixture active we are attached
+        # to a tab somebody else owns; resizing it would mutate a window the
+        # operator is using, which the connector's tab-ownership rule forbids.
+        viewport_pinned = False
+        if not owned_tab:
+            report["viewport"] = {
+                "requested": dict(BENCH_VIEWPORT),
+                "measured_inner": eval_value(cdp, "[innerWidth, innerHeight]"),
+                "pinned": False,
+                "why": "not our tab: refused to resize a window we do not own",
+            }
+            report["notes"].append(
+                "viewport left alone because this run measured a tab it does not "
+                "own; node counts are host-dependent and not cross-machine data")
+        else:
+            try:
+                cdp.call("Emulation.setDeviceMetricsOverride", dict(BENCH_VIEWPORT))
+                time.sleep(0.35)  # a tree read mid-relayout is a guess, not a reading
+                inner = eval_value(cdp, "[innerWidth, innerHeight]")
+                viewport_pinned = (isinstance(inner, (list, tuple)) and len(inner) == 2
+                                   and inner[0] == BENCH_VIEWPORT["width"])
+                report["viewport"] = {"requested": dict(BENCH_VIEWPORT),
+                                      "measured_inner": inner,
+                                      "pinned": viewport_pinned}
+                if not viewport_pinned:
+                    report["notes"].append(
+                        f"viewport override did not take: asked for "
+                        f"{BENCH_VIEWPORT['width']}px, window reports {inner}")
+            except (WSError, OSError) as exc:
+                report["viewport"] = {"requested": dict(BENCH_VIEWPORT),
+                                      "measured_inner": None, "pinned": False,
+                                      "error": str(exc)}
+                report["notes"].append(
+                    f"viewport could not be pinned ({exc}): node counts on this run "
+                    f"are host-dependent and not comparable to another machine")
+
+        # Comparability is a property of the fixture AND of the conditions it was
+        # measured under. Both must hold.
+        report["comparable_across_machines"] = (
+            fixture_mode == "synthetic" and viewport_pinned)
 
         if fixture_mode == "synthetic":
             built = eval_value(cdp, FIXTURE_JS)
@@ -464,7 +564,8 @@ def run_benchmark(port, samples, fixture_mode, timeout):
         report["measurements"]["dom_chars"] = dom_bytes
 
         # --- 3. Accessibility tree (structural perception input) --------
-        ax_ms, ax_nodes, actionable, scene_lines = [], 0, 0, []
+        ax_ms, ax_raw, ax_inline, ax_ignored = [], 0, 0, 0
+        actionable, scene_lines = 0, []
         try:
             cdp.call("Accessibility.enable")
             for _ in range(min(20, samples)):
@@ -472,10 +573,14 @@ def run_benchmark(port, samples, fixture_mode, timeout):
                 ax = cdp.call("Accessibility.getFullAXTree")
                 ax_ms.append((time.perf_counter() - t0) * 1000.0)
                 nodes = ax.get("nodes", [])
-                ax_nodes = len(nodes)
+                ax_raw = len(nodes)
+                ax_inline, ax_ignored = 0, 0
                 scene_lines = []
                 for n in nodes:
+                    if str(n.get("role", {}).get("value", "")) in LAYOUT_DERIVED_AX_ROLES:
+                        ax_inline += 1
                     if n.get("ignored", False):
+                        ax_ignored += 1
                         continue
                     role = str(n.get("role", {}).get("value", "")).lower()
                     if role not in ACTIONABLE_ROLES:
@@ -484,8 +589,25 @@ def run_benchmark(port, samples, fixture_mode, timeout):
                     scene_lines.append(f'{role} "{name}"')
                 actionable = len(scene_lines)
             report["measurements"]["ax_tree"] = summarize(ax_ms)
-            report["measurements"]["ax_nodes"] = ax_nodes
+            # Deliberately NOT reported as a bare "ax_nodes". An unqualified node
+            # count is what invited two machines to be compared on a number that
+            # measures their window and their a11y mode, not the connector.
+            report["measurements"]["ax_nodes_raw"] = ax_raw
+            report["measurements"]["ax_inline_text_boxes"] = ax_inline
+            report["measurements"]["ax_nodes_semantic"] = ax_raw - ax_inline
+            report["measurements"]["ax_ignored_nodes"] = ax_ignored
             report["measurements"]["actionable_nodes"] = actionable
+            report["notes"].append(
+                "ax_nodes_semantic = raw tree minus InlineTextBox nodes. Chrome "
+                "emits InlineTextBox nodes only when the active accessibility "
+                "mode asks for them, and how many it emits tracks how the text is "
+                "laid out, so ax_nodes_raw reads this window and this browser's "
+                "a11y mode as much as it reads the page. Two hosts differed by 440 "
+                "here while agreeing on dom_chars, actionable_nodes, scene_chars "
+                "and reduction_ratio. They did NOT agree on screenshot_bytes "
+                "(119683 vs 109932): they painted different pixels, which is the "
+                "same layout difference seen from another angle."
+            )
         except WSError as exc:
             report["notes"].append(f"accessibility domain unavailable: {exc}")
 
@@ -527,6 +649,13 @@ def run_benchmark(port, samples, fixture_mode, timeout):
         return report, None
 
     finally:
+        # Undo the emulation before letting go, so a tab that outlives a failed
+        # close is not left stuck at an overridden size.
+        if viewport_pinned:
+            try:
+                cdp.call("Emulation.clearDeviceMetricsOverride")
+            except Exception:
+                pass
         try:
             cdp.close()
         except Exception:
@@ -558,6 +687,9 @@ def render_human(report):
     out.append(f"python       : {report['host']['python']}   cpus: {report['host']['cpu_count']}")
     out.append(f"fixture      : {report['fixture']}"
                f"   comparable_across_machines={report['comparable_across_machines']}")
+    vp = report.get("viewport") or {}
+    out.append(f"viewport     : {vp.get('measured_inner')} pinned={vp.get('pinned')}"
+               f"   (node counts are meaningless without this)")
     if report.get("fixture_detail"):
         fd = report["fixture_detail"]
         out.append(f"               {fd.get('elements')} elements "
@@ -575,8 +707,12 @@ def render_human(report):
     out.append(f"DOM serialize     : p50 {ds.get('p50_ms')} ms -> {m.get('dom_chars')} chars")
     ax = m.get("ax_tree", {})
     if ax:
-        out.append(f"A11y full tree    : p50 {ax.get('p50_ms')} ms -> {m.get('ax_nodes')} nodes, "
+        out.append(f"A11y full tree    : p50 {ax.get('p50_ms')} ms -> "
+                   f"{m.get('ax_nodes_semantic')} semantic nodes, "
                    f"{m.get('actionable_nodes')} actionable")
+        out.append(f"                    raw {m.get('ax_nodes_raw')} incl. "
+                   f"{m.get('ax_inline_text_boxes')} InlineTextBox "
+                   f"(host-dependent, not comparable)")
     if m.get("reduction_ratio"):
         out.append(f"perception gain   : {m.get('reduction_ratio')}x smaller than raw DOM "
                    f"({m.get('dom_chars')} -> {m.get('scene_chars')} chars measured)")
